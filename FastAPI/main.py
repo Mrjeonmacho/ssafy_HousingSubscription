@@ -1,8 +1,24 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic_settings import BaseSettings
 
+# 1. 앱 생성
 app = FastAPI()
 
-@app.get("/hello")
-def hello():
-    return {"message": "hello world"}
+# 2. CORS 설정 (React가 접근할 수 있게 허용)
+# 원래는 ["http://localhost:3000"] 처럼 특정 주소만 적는 게 정석이지만,
+# 개발 중에는 ["*"]로 모든 곳을 허용하는 게 편합니다.
+origins = ["*"]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 3. 테스트용 API
+@app.get("/")
+def read_root():
+    return {"message": "Hello from FastAPI!"}
