@@ -20,8 +20,7 @@ public class NoticeService {
 
     private final NoticeRepository noticeRepository;
 
-
-
+    //전체 공고 조회
     public NoticeListResponseDto getNoticeList() {
         List<Notice> notices = noticeRepository.findAll();
         List<NoticeResponseDto> noticeResponseDtos = notices.stream()
@@ -53,6 +52,9 @@ public class NoticeService {
         return new NoticeResponseDto(notice);
     }
 
+
+    // 새로 만들어진게 아니라 이미 JPA로 관리되는 레포지토리에 있는 것을 들고와서 수정하기 때문에
+    // 끝나고 save할 필요 없이 트랜잭션 끝나면 알아서 영속화함
     @Transactional
     public NoticeResponseDto updateNotice(Long noticeId, NoticeRequestDto noticeRequestDto) {
         Notice notice = noticeRepository.findById(noticeId)

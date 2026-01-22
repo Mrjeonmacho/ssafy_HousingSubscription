@@ -3,10 +3,12 @@ package com.ssafy14.a606.domain.notice.dto.request;
 import com.ssafy14.a606.domain.notice.entity.NoticeCategory;
 import com.ssafy14.a606.domain.notice.entity.NoticeStatus;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
 @Getter
+@Setter
 public class NoticeRequestDto {
 
     private String noticeNo;
