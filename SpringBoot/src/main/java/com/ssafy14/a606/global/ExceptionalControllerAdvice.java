@@ -48,6 +48,12 @@ public class ExceptionalControllerAdvice {
         return handleException(e, HttpStatus.FORBIDDEN, "FB");
     }
 
+    // 409 - 중복값
+    @ExceptionHandler(DuplicateValueException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateValueException(DuplicateValueException e) {
+        return handleException(e, HttpStatus.CONFLICT, "DUP");
+    }
+
     // 500 - DB 오류
     @ExceptionHandler(DatabaseException.class)
     public ResponseEntity<ErrorResponse> handleDatabaseException(DatabaseException e) {
