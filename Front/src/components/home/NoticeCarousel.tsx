@@ -31,7 +31,7 @@ export default function NoticeCarousel() {
         {notices.map((item) => (
           <div
             key={item.id}
-            className="min-w-[320px] glass p-6 rounded-3xl border border-gray-100 dark:border-white/10 hover:shadow-xl transition-all group shrink-0"
+            className="min-w-[320px] glass p-6 rounded-3xl border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl transition-all group shrink-0"
           >
             <div className="flex justify-between items-start mb-4">
               <span
