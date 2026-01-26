@@ -1,8 +1,8 @@
 export default function HeroSearch() {
   return (
-    <section className="flex flex-col items-center justify-center text-center pt-8 pb-12 max-w-4xl mx-auto w-full">
-      <div className="mb-8 flex flex-col items-center">
-        <div className="w-16 h-16 bg-gradient-to-tr from-primary to-[#54e3a4] rounded-full flex items-center justify-center text-white mb-6 shadow-2xl shadow-primary/40">
+    <section className="flex flex-col items-center justify-center text-left pt-8 pb-12 max-w-4xl w-full">
+      <div className="mb-8 flex flex-col items-start">
+        <div className="w-16 h-16 bg-gradient-to-tr from-primary to-[#54e3a4] rounded-full flex items-left justify-center text-white mb-6 shadow-2xl shadow-primary/40">
           <span className="material-symbols-outlined text-4xl leading-none">
             auto_awesome
           </span>
@@ -28,7 +28,7 @@ export default function HeroSearch() {
             type="text"
           />
           <button className="bg-primary text-white p-3 rounded-2xl hover:scale-105 shadow-lg shadow-primary/20 transition-transform">
-            <span className="material-symbols-outlined">arrow_upward</span>
+            <span className="material-symbols-outlined">arrow_upward</span> 
           </button>
         </div>
       </div>
