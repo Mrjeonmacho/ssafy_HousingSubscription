@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const LoginCard = (): React.ReactElement => {
 
@@ -30,9 +31,9 @@ const LoginCard = (): React.ReactElement => {
 
           <div className="text-sm space-y-2">
             <p className="text-gray-600">아직 회원이 아니신가요?</p>
-            <button className="text-primary font-bold underline cursor-pointer hover:opacity-80 transition-opacity">
+            <Link to="/signup" className="text-primary font-bold underline cursor-pointer hover:opacity-80 transition-opacity">
               회원가입
-            </button>
+            </Link>
           </div>
         </div>
       </div>
