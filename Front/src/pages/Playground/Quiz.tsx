@@ -4,13 +4,14 @@ import QuizHeader from "../../components/playground/quiz/QuizHeader";
 import QuizQuestionView from "../../components/playground/quiz/QuizQuestionView";
 import QuizResultCorrect from "../../components/playground/quiz/QuizResultCorrect";
 import QuizResultWrong from "../../components/playground/quiz/QuizResultWrong";
+import QuizResultDone from "../../components/playground/quiz/QuizResultDone";
 
 type QuizQuestion = {
   questionId: number;
   question: string;
 };
 
-type QuizStatus = "question" | "correct" | "wrong";
+type QuizStatus = "question" | "correct" | "wrong" | "done";
 
 type QuizAnswerResponse = {
   isCorrect: boolean;
@@ -27,29 +28,28 @@ export default function Quiz() {
   const [correctAnswer, setCorrectAnswer] = useState("");
   const [explanation, setExplanation] = useState("");
 
+  const [correctCount, setCorrectCount] = useState(0);
+
   const currentQuestion = questions[currentIndex];
+
+  const isLastQuestion = currentIndex === questions.length - 1;
+
 
   useEffect(() => {
     const fetchQuiz = async () => {
-      try {
-        const res = await fetch("/api/games/quiz/start", {
-          credentials: "include",
-        });
+      const res = await fetch("/api/games/quiz/start", { credentials: "include" });
+      if (!res.ok) return;
 
-        if (!res.ok) return;
+      const data = await res.json();
+      const list: QuizQuestion[] = Array.isArray(data) ? data : data?.questions ?? [];
 
-        const data = await res.json();
-
-        // ✅ 현재 백엔드 응답: 배열 그 자체
-        //    (혹시 나중에 {questions: []}로 바뀌어도 대응)
-        const list: QuizQuestion[] = Array.isArray(data) ? data : data?.questions ?? [];
-
-        setQuestions(list);
-        setCurrentIndex(0);
-        setStatus("question");
-      } catch {
-        // 필요 시 에러 처리 확장
-      }
+      setQuestions(list);
+      setCurrentIndex(0);
+      setCorrectCount(0);
+      setAnswer("");
+      setCorrectAnswer("");
+      setExplanation("");
+      setStatus("question");
     };
 
     fetchQuiz();
@@ -58,47 +58,53 @@ export default function Quiz() {
   const handleSubmitAnswer = async () => {
     if (!currentQuestion) return;
 
-    try {
-      const res = await fetch("/api/games/quiz/answer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          questionId: currentQuestion.questionId,
-          answer: answer.trim(),
-        }),
-      });
+    const res = await fetch("/api/games/quiz/answer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        questionId: currentQuestion.questionId,
+        answer: answer.trim(),
+      }),
+    });
 
-      if (!res.ok) return;
+    if (!res.ok) return;
 
-      const data: QuizAnswerResponse = await res.json();
+    const data: QuizAnswerResponse = await res.json();
 
-      console.log("answer raw:", JSON.stringify(answer));
-      console.log("answer len:", answer.length);
-      console.log("correct raw:", JSON.stringify(data.correctAnswer));
-      console.log("correct len:", data.correctAnswer.length);
+    setCorrectAnswer(data.correctAnswer ?? "");
+    setExplanation(data.explanation ?? "");
+    setStatus(data.isCorrect ? "correct" : "wrong");
 
-      setCorrectAnswer(data.correctAnswer ?? "");
-      setExplanation(data.explanation ?? "");
-      setStatus(data.isCorrect ? "correct" : "wrong");
-    } catch {
-      // 필요 시 에러 처리 확장
-    }
+    if (data.isCorrect) setCorrectCount((prev) => prev + 1);
   };
 
   const handleNextQuestion = () => {
+    const isLast = currentIndex >= questions.length - 1;
+
+    setAnswer("");
+    setCorrectAnswer("");
+    setExplanation("");
+
+    if (isLast) {
+      setStatus("done");
+      return;
+    }
+
+    setCurrentIndex((prev) => prev + 1);
+    setStatus("question");
+  };
+
+  const handleRestart = () => {
+    setCurrentIndex(0);
+    setCorrectCount(0);
     setAnswer("");
     setCorrectAnswer("");
     setExplanation("");
     setStatus("question");
-
-    setCurrentIndex((prev) => {
-      const next = prev + 1;
-      return next < questions.length ? next : prev; // 범위 초과 방지
-    });
   };
 
-  // 선택: 로딩/빈 데이터 구분
+  // 로딩 처리
   if (questions.length === 0) {
     return (
       <main className="flex-1 px-4 md:px-20 lg:px-40 py-12 flex items-center justify-center">
@@ -110,7 +116,15 @@ export default function Quiz() {
   return (
     <main className="flex-1 px-4 md:px-20 lg:px-40 py-12 flex flex-col items-center">
       <div className="w-full max-w-3xl flex flex-col gap-8">
-        <QuizHeader currentIndex={currentIndex} totalCount={questions.length} />
+        <QuizHeader currentIndex={Math.min(currentIndex, questions.length - 1)} totalCount={questions.length} />
+
+        {status === "done" && (
+          <QuizResultDone
+            totalCount={questions.length}
+            correctCount={correctCount}
+            onRestart={handleRestart}
+          />
+        )}
 
         {status === "question" && (
           <QuizQuestionView
@@ -126,6 +140,7 @@ export default function Quiz() {
             correctAnswer={correctAnswer}
             explanation={explanation}
             onNext={handleNextQuestion}
+            nextLabel={isLastQuestion ? "결과 확인" : "다음 문제로 이동"}
           />
         )}
 
@@ -135,6 +150,7 @@ export default function Quiz() {
             correctAnswer={correctAnswer}
             explanation={explanation}
             onNext={handleNextQuestion}
+            nextLabel={isLastQuestion ? "결과 확인" : "다음 문제로 이동"}
           />
         )}
       </div>
