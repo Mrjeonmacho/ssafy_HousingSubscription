@@ -73,7 +73,7 @@ export default function Playground() {
                 <div>
                     <button
                         type="button"
-                        onClick={() => navigate("/playground/test")}
+                        onClick={() => navigate("/playground/preference")}
                         className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2 text-sm font-semibold text-white shadow-md shadow-primary/25 hover:brightness-105 active:scale-[0.98] transition"
                     >
                         검사 시작
