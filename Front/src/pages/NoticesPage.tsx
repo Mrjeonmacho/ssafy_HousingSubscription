@@ -8,7 +8,6 @@ import NoticeFilterBar from "../components/notices/NoticeFilterBar";
 import NoticeListSection from "../components/notices/NoticeListSection";
 import Pagination from "../components/notices/Pagination";
 
-// ✅ 백엔드 enum 기준
 type NoticeCategory =
   | "YOUTH_RESIDENCE"
   | "HAPPY_HOUSE"
@@ -38,7 +37,7 @@ export type Notice = {
   url: string | null;
 };
 
-// ✅ /api/notices 응답 형태: { notices: [...] }
+// /api/notices 응답 형태: { notices: [...] }
 type NoticesResponse = {
   notices: Notice[];
 };

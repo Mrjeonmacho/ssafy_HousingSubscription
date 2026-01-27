@@ -1,6 +1,7 @@
 // Front/src/components/notices/NoticeHeroCarousel.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Notice } from "../../pages/NoticesPage";
+import { categoryLabel, statusLabel } from "../../utils/noticeFormat";
 
 type NoticeHeroCarouselProps = {
   items: Notice[];
@@ -9,42 +10,6 @@ type NoticeHeroCarouselProps = {
 
 function formatDate(dateStr: string | null) {
   return dateStr ?? "-";
-}
-
-// ✅ 백엔드 enum(NoticeCategory) 기준 라벨
-function categoryLabel(category: string | null) {
-  switch (category) {
-    case "YOUTH_RESIDENCE":
-      return "청년안심주택";
-    case "HAPPY_HOUSE":
-      return "행복주택";
-    case "NATIONAL_RENTAL":
-      return "국민임대";
-    case "PUBLIC_RENTAL":
-      return "공공임대";
-    case "LONG_TERM_RENTAL":
-      return "장기전세";
-    case "SALE_HOUSE":
-      return "분양주택";
-    default:
-      return category ?? "기타";
-  }
-}
-
-// ✅ 백엔드 enum(NoticeStatus) 기준 라벨
-function statusLabel(status: string | null) {
-  switch (status) {
-    case "RECEIVING":
-      return "접수중";
-    case "DEADLINE_APPROACHING":
-      return "마감임박";
-    case "COMPLETED":
-      return "접수마감";
-    case "TO_BE_ANNOUNCED":
-      return "발표예정";
-    default:
-      return status ?? "상태미정";
-  }
 }
 
 export default function NoticeHeroCarousel({
