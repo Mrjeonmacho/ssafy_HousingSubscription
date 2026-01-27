@@ -1,4 +1,4 @@
-package com.ssafy14.a606.domain.user.dto.response;
+package com.ssafy14.a606.domain.auth.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

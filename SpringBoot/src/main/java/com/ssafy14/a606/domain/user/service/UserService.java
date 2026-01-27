@@ -1,11 +1,8 @@
 package com.ssafy14.a606.domain.user.service;
 
 
-import com.ssafy14.a606.domain.user.dto.request.SignInRequestDto;
 import com.ssafy14.a606.domain.user.dto.request.SignUpRequestDto;
-import com.ssafy14.a606.domain.user.dto.response.SignInResponseDto;
 import com.ssafy14.a606.domain.user.dto.response.SignUpResponseDto;
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.Map;
 
@@ -22,7 +19,4 @@ public interface UserService {
 
     // 4. 중복 확인
     Map<String, Object> checkDuplicate(String type, String value);
-
-    // 5. 로컬 로그인
-    SignInResponseDto signInLocal(SignInRequestDto request, HttpServletResponse response);
 }
