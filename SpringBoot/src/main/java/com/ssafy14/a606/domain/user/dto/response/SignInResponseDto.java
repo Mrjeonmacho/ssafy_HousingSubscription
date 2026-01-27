@@ -9,5 +9,7 @@ public class SignInResponseDto {
 
     private String accessToken;
     private String refreshToken;
+    private String userName;
+    private String userRole;
 
 }

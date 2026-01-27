@@ -125,6 +125,8 @@ public class UserServiceImpl implements UserService {
         String accessToken = jwtTokenProvider.createAccessToken(user.getLoginId(), role);
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getLoginId());
 
+        String userRole = "ROLE_" + user.getRole().name();
+
         // refreshToken -> HttpOnly 쿠키
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
@@ -136,7 +138,7 @@ public class UserServiceImpl implements UserService {
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        return new SignInResponseDto(accessToken, refreshToken);
+        return new SignInResponseDto(accessToken, refreshToken, user.getUserName(), userRole);
     }
 
 }
