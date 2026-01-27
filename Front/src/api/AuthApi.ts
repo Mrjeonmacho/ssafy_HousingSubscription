@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8080/api/users";
+const BASE_URL = "/api";
 
 // 회원가입 데이터
 interface SignupData {
@@ -10,10 +10,23 @@ interface SignupData {
   confirmPassword?: string;  // 선택적 속성
 }
 
+// 로그인 요청 데이터
+interface LoginData {
+  loginId: string;
+  password: string;
+}
+
+// 로그인 응답 데이터
+interface LoginResponse {
+  token: string;
+  userName: string;
+  message?: string; // 선택적 속성
+}
+
 // 아이디 중복 확인
 export const checkIdDuplicate = async (userId: string): Promise<boolean> => {
   try {
-    const response = await fetch(`${BASE_URL}/check?type=loginId&value=${userId}`);
+    const response = await fetch(`${BASE_URL}/users/check?type=loginId&value=${userId}`);
     
     if (!response.ok) {
         return false;
@@ -52,7 +65,7 @@ export const verifyCode = async (code: string): Promise<boolean> => {
 // 회원가입 요청
 export const registerUser = async (userData: SignupData): Promise<boolean> => {
   try {
-    const response = await fetch(`${BASE_URL}/signup`, {
+    const response = await fetch(`${BASE_URL}/users/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -79,3 +92,31 @@ export const registerUser = async (userData: SignupData): Promise<boolean> => {
   }
 };
 
+// 로그인 요청
+export const login = async (loginData: LoginData): Promise<LoginResponse | null> => {
+  try {
+    const response = await fetch(`${BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        loginId: loginData.loginId,
+        password: loginData.password,
+      }),
+    });
+
+    if (response.ok) {
+      const data: LoginResponse = await response.json();
+      console.log("로그인 성공:", data);
+      return data;
+    } else {
+      const errorData = await response.json().catch(() => ({})); 
+      console.error("로그인 실패:", errorData);
+      return null;
+    }
+  } catch (error) {
+    console.error("서버 통신 에러:", error);
+    return null;
+  }
+};
