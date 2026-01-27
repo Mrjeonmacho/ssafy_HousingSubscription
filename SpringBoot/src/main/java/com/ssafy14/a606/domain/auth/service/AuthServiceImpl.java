@@ -2,6 +2,7 @@ package com.ssafy14.a606.domain.auth.service;
 
 import com.ssafy14.a606.domain.auth.dto.request.SignInRequestDto;
 import com.ssafy14.a606.domain.auth.dto.response.SignInResponseDto;
+import com.ssafy14.a606.domain.auth.refresh.RefreshTokenStore;
 import com.ssafy14.a606.domain.user.entity.AuthType;
 import com.ssafy14.a606.domain.user.entity.User;
 import com.ssafy14.a606.domain.user.repository.UserRepository;
@@ -25,6 +26,7 @@ public class AuthServiceImpl implements AuthService{
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenStore refreshTokenStore;
 
     // 로컬 로그인
     @Override
@@ -57,6 +59,8 @@ public class AuthServiceImpl implements AuthService{
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        refreshTokenStore.save(user.getId(), refreshToken);
 
         return new SignInResponseDto(accessToken, refreshToken, user.getUserName(), userRole);
     }
