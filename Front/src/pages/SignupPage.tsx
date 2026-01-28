@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { checkIdDuplicate, sendVerificationCode, verifyCode, registerUser } from "../api/AuthApi";
+import { checkDuplicate, sendVerificationCode, verifyCode, registerUser } from "../api/AuthApi";
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -25,10 +25,17 @@ export default function SignupPage() {
   // 진행 상태 관리
   const [status, setStatus] = useState({
     isIdChecked: false,   // 아이디 중복확인 완료 여부
+    isEmailChecked: false, // 이메일 사용 가능 여부
     isEmailSent: false,   // 이메일 전송 여부
     isEmailVerified: false, // 이메일 인증 완료 여부
     timeLeft: 180,        // 타이머
   });
+
+  // 실시간 아이디 중복 확인용 상태
+  const [idMessage, setIdMessage] = useState("");      // 아이디 중복 메시지
+
+  // 실시간 이메일 중복 확인용 상태
+  const [emailMessage, setEmailMessage] = useState("");      // 이메일 중복 메시지
 
   // 약관 동의
   const [agreements, setAgreements] = useState({
@@ -41,6 +48,64 @@ export default function SignupPage() {
   const isPasswordMatch = formData.confirmPassword.length > 0 && formData.password === formData.confirmPassword;
 
   const isAllAgreed = agreements.terms && agreements.privacy;
+
+  // 실시간 아이디 중복 확인
+  useEffect(() => {
+    // 아이디가 비어있거나 형식 에러가 있으면 검사 안 함
+    if (!formData.userId || errors.userId) return;
+
+    // 서버 요청
+    const timer = setTimeout(async () => {
+      try {
+        // API 호출 (type: "loginId", value: 입력값)
+        const result = await checkDuplicate("loginId", formData.userId);
+        console.log("중복 확인 응답:", result);
+        
+        if (result.available) {
+          setIdMessage("사용 가능한 아이디입니다.");
+          setStatus(prev => ({ ...prev, isIdChecked: true }));
+        } else {
+          setIdMessage("이미 사용 중인 아이디입니다.");
+          setStatus(prev => ({ ...prev, isIdChecked: false }));
+        }
+      } catch (error) {
+        console.error("중복 확인 에러:", error);
+        setIdMessage("중복 확인 중 오류가 발생했습니다.");
+      } 
+    }, 300); // 0.3초 딜레이
+
+    // 타이핑 계속하면 타이머 초기화
+    return () => clearTimeout(timer);
+  }, [formData.userId, errors.userId]); // userId가 변할 때마다 실행
+
+  // 실시간 이메일 중복 확인
+  useEffect(() => {
+    // 이메일 비어있거나 형식 에러가 있으면 검사 안 함
+    if (!formData.email || errors.email || status.isEmailVerified) return;
+
+    // 서버 요청
+    const timer = setTimeout(async () => {
+      try {
+        // API 호출 (type: "email", value: 입력값)
+        const result = await checkDuplicate("email", formData.email);
+        console.log("중복 확인 응답:", result);
+        
+        if (result.available) {
+          setEmailMessage("사용 가능한 이메일입니다.");
+          setStatus(prev => ({ ...prev, isEmailChecked: true }));
+        } else {
+          setEmailMessage("이미 사용 중인 이메일입니다.");
+          setStatus(prev => ({ ...prev, isEmailChecked: false }));
+        }
+      } catch (error) {
+        console.error("중복 확인 에러:", error);
+        setEmailMessage("중복 확인 중 오류가 발생했습니다.");
+      } 
+    }, 300); // 0.3초 딜레이
+
+    // 타이핑 계속하면 타이머 초기화
+    return () => clearTimeout(timer);
+  }, [formData.email, errors.email, status.isEmailVerified]); // email가 변할 때마다 인증도 필요
 
   // 타이머
   useEffect(() => {
@@ -101,22 +166,18 @@ export default function SignupPage() {
 
     // 아이디가 바뀌면 중복확인 상태 초기화
     if (name === "userId") {
+      setIdMessage("");
       setStatus((prev) => ({ ...prev, isIdChecked: false }));
     }
-  };
-
-  // 아이디 중복 확인
-  const handleCheckId = async () => {
-    if (!formData.userId) return alert("아이디를 입력해주세요.");
-    if (errors.userId) return alert("아이디 형식이 올바르지 않습니다."); 
-
-    const isAvailable = await checkIdDuplicate(formData.userId);
-    if (isAvailable) {
-      alert("사용 가능한 아이디입니다.");
-      setStatus((prev) => ({ ...prev, isIdChecked: true }));
-    } else {
-      alert("이미 사용 중인 아이디입니다.");
-      setStatus((prev) => ({ ...prev, isIdChecked: false }));
+    // 이메일이 바뀌면 중복확인 상태 초기화
+    if (name === "email") {
+      setEmailMessage("");
+      setStatus(prev => ({ 
+          ...prev, 
+          isEmailSent: false, 
+          isEmailVerified: false, 
+          isEmailAvailable: false // 입력 변경 시 다시 검사해야 하므로 false
+      }));
     }
   };
 
@@ -195,14 +256,14 @@ export default function SignupPage() {
         <form className="space-y-6">
           {/* 아이디 입력 */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">아이디</label>
-            <div className="flex gap-3">
+            <label className="block text-sm font-bold text-gray-700">아이디</label>
+            <div className="relative">
               <input
                 type="text"
                 name="userId"
                 value={formData.userId}
                 onChange={handleChange}
-                className={`flex-1 px-4 py-3.5 rounded-2xl border ${
+                className={`w-full px-4 py-3.5 rounded-2xl border ${
                   errors.userId 
                     ? 'border-red-500 focus:ring-red-200' 
                     : status.isIdChecked 
@@ -211,17 +272,19 @@ export default function SignupPage() {
                 } outline-none transition-all`}
                 placeholder="아이디를 입력해주세요"
               />
-              <button
-                type="button"
-                onClick={handleCheckId}
-                disabled={status.isIdChecked}
-                className={`px-5 py-3.5 font-bold rounded-2xl transition-colors whitespace-nowrap text-sm ${status.isIdChecked ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-              >
-                {status.isIdChecked ? "확인 완료" : "중복 확인"}
-              </button>
             </div>
-            {/* 에러 메시지 */}
-            {errors.userId && <p className="text-red-500 text-xs mt-1 ml-1">{errors.userId}</p>}
+            {/* 에러메시지 & 중복검사 결과 */}
+            {(errors.userId || idMessage) && (
+              <div className="mt-1 ml-1">
+                {errors.userId ? (
+                  <p className="text-red-500 text-xs">{errors.userId}</p>
+                ) : (
+                  <p className={`text-xs font-bold min-h-5 ${status.isIdChecked ? "text-green-600" : "text-red-500"}`}>
+                    {idMessage}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* 비밀번호 입력 */}
@@ -298,8 +361,19 @@ export default function SignupPage() {
                 {status.isEmailVerified ? "인증 완료" : status.isEmailSent ? "재전송" : "인증번호 전송"}
               </button>
             </div>
-            {errors.email && <p className="text-red-500 text-xs mt-1 ml-1">{errors.email}</p>}
-
+            {/* 에러메시지 & 중복검사 결과 */}
+            {(errors.email || emailMessage) && (
+              <div className="mt-1 ml-1">
+                {errors.email ? (
+                  <p className="text-red-500 text-xs">{errors.email}</p>
+                ) : (
+                  <p className={`text-xs font-bold min-h-5 ${status.isEmailChecked? "text-green-600" : "text-red-500"}`}>
+                    {emailMessage}
+                  </p>
+                )}
+              </div>
+            )}
+            
             {/* 인증번호 입력 */}
             {status.isEmailSent && !status.isEmailVerified && (
               <div className="flex gap-3 animate-fade-in-down">

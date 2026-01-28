@@ -18,22 +18,28 @@ interface LoginData {
   password: string;
 }
 
-// 아이디 중복 확인
-export const checkIdDuplicate = async (userId: string): Promise<boolean> => {
+// 중복 확인 응답 데이터 타입
+interface CheckDuplicateResponse {
+  available: boolean;
+  message: string;
+}
+
+// 중복 확인 (아이디 또는 이메일)
+export const checkDuplicate = async (type: "loginId" | "email", value: string): Promise<CheckDuplicateResponse> => {
   try {
-    const response = await fetch(`${BASE_URL}/users/check?type=loginId&value=${userId}`);
+    const response = await fetch(`${BASE_URL}/users/check?type=${type}&value=${value}`);
     
     if (!response.ok) {
-        return false;
+        throw new Error("중복 확인 요청 실패");
     }
 
     const data = await response.json();
     console.log("중복 확인 결과:", data); 
 
-    return true; 
+    return data;
   } catch (error) {
     console.error("아이디 중복 확인 에러:", error);
-    return false;
+    return { available: false, message: "서버 연결 오류" };
   }
 };
 
