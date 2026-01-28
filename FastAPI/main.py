@@ -33,6 +33,4 @@ def read_root():
 # 5. 챗봇 API
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
-    # 여기에서 실제 챗봇 로직을 수행합니다.
-    # 지금은 받은 메시지를 그대로 반환합니다.
     return ChatResponse(message=f"FastAPI received: {request.message}")
