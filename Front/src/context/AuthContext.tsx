@@ -16,11 +16,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const [user, setUser] = useState<User | null>(() => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const accessToken = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
       const userName = localStorage.getItem("userName");
-      
-      if (token && userName) {
-        return { token, userName };
+      const userRole = localStorage.getItem("userRole");
+
+      if (accessToken && userName && refreshToken && userRole) {
+        return { accessToken, refreshToken, userName, userRole };
       }
       return null;
     } catch {
@@ -29,14 +31,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   const login = (userData: User) => {
-    localStorage.setItem("accessToken", userData.token);
+    localStorage.setItem("accessToken", userData.accessToken);
+    localStorage.setItem("refreshToken", userData.refreshToken);
     localStorage.setItem("userName", userData.userName);
+    localStorage.setItem("userRole", userData.userRole || "USER");
     setUser(userData);
   };
 
   const logout = () => {
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("userName");
+    localStorage.removeItem("userRole");
     setUser(null);
   };
 
@@ -47,7 +53,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// ★ [수정 포인트] 아래 주석을 추가하면 에러가 사라집니다.
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);

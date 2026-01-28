@@ -26,8 +26,10 @@ export default function LoginPage() {
     if (result) {
       // 로그인 상태 업데이트
       login({ 
-        token: result.token, 
-        userName: result.userName 
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        userName: result.userName,
+        userRole: result.userRole
       });
       
       alert(`${result.userName}님 환영합니다!`);
