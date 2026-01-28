@@ -1,4 +1,4 @@
-package com.ssafy14.a606.domain.user.dto.request;
+package com.ssafy14.a606.domain.auth.dto.request;
 
 import lombok.Getter;
 

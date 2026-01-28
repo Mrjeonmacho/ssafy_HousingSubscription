@@ -1,3 +1,6 @@
+import { apiClient } from "./axiosConfig"; // Axios 인스턴스
+import { type User } from "../types/auth"; // User 인터페이스
+
 const BASE_URL = "/api";
 
 // 회원가입 데이터
@@ -10,22 +13,34 @@ interface SignupData {
   confirmPassword?: string;  // 선택적 속성
 }
 
-// 아이디 중복 확인
-export const checkIdDuplicate = async (userId: string): Promise<boolean> => {
+// 로그인 요청 데이터
+interface LoginData {
+  loginId: string;
+  password: string;
+}
+
+// 중복 확인 응답 데이터 타입
+interface CheckDuplicateResponse {
+  available: boolean;
+  message: string;
+}
+
+// 중복 확인 (아이디 또는 이메일)
+export const checkDuplicate = async (type: "loginId" | "email", value: string): Promise<CheckDuplicateResponse> => {
   try {
-    const response = await fetch(`${BASE_URL}/users/check?type=loginId&value=${userId}`);
+    const response = await fetch(`${BASE_URL}/users/check?type=${type}&value=${value}`);
     
     if (!response.ok) {
-        return false;
+        throw new Error("중복 확인 요청 실패");
     }
 
     const data = await response.json();
     console.log("중복 확인 결과:", data); 
 
-    return true; 
+    return data;
   } catch (error) {
     console.error("아이디 중복 확인 에러:", error);
-    return false;
+    return { available: false, message: "서버 연결 오류" };
   }
 };
 
@@ -79,3 +94,27 @@ export const registerUser = async (userData: SignupData): Promise<boolean> => {
   }
 };
 
+// 로그인
+export const login = async (loginData: LoginData): Promise<User | null> => {
+  try {
+    const response = await apiClient.post<User>("/auth/login", {
+      loginId: loginData.loginId,
+      password: loginData.password,
+    });
+    
+    console.log("로그인 성공:", response.data);
+    return response.data; 
+  } catch (error) {
+    console.error("로그인 실패:", error);
+    return null;
+  }
+};
+
+// 로그아웃
+export const logoutAPI = async (): Promise<void> => {
+  try {
+    await apiClient.post("/auth/logout");
+  } catch (error) {
+    console.error("로그아웃 요청 실패", error);
+  }
+};
