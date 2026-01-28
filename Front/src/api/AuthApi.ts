@@ -1,4 +1,5 @@
-import { type User } from "../types/auth";  // User 인터페이스
+import { apiClient } from "./axiosConfig"; // Axios 인스턴스
+import { type User } from "../types/auth"; // User 인터페이스
 
 const BASE_URL = "/api";
 
@@ -93,31 +94,27 @@ export const registerUser = async (userData: SignupData): Promise<boolean> => {
   }
 };
 
-// 로그인 요청
+// 로그인
 export const login = async (loginData: LoginData): Promise<User | null> => {
   try {
-    const response = await fetch(`${BASE_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        loginId: loginData.loginId,
-        password: loginData.password,
-      }),
+    const response = await apiClient.post<User>("/auth/login", {
+      loginId: loginData.loginId,
+      password: loginData.password,
     });
-
-    if (response.ok) {
-      const data: User = await response.json();
-      console.log("로그인 성공:", data);
-      return data;
-    } else {
-      const errorData = await response.json().catch(() => ({})); 
-      console.error("로그인 실패:", errorData);
-      return null;
-    }
+    
+    console.log("로그인 성공:", response.data);
+    return response.data; 
   } catch (error) {
-    console.error("서버 통신 에러:", error);
+    console.error("로그인 실패:", error);
     return null;
+  }
+};
+
+// 로그아웃
+export const logoutAPI = async (): Promise<void> => {
+  try {
+    await apiClient.post("/auth/logout");
+  } catch (error) {
+    console.error("로그아웃 요청 실패", error);
   }
 };

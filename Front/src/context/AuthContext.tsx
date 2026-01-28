@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import type { User } from "../types/auth"; // 타입 import 확인
+import { logoutAPI } from "../api/AuthApi";
 
 // Context 타입
 interface AuthContextType {
@@ -17,12 +18,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(() => {
     try {
       const accessToken = localStorage.getItem("accessToken");
-      const refreshToken = localStorage.getItem("refreshToken");
       const userName = localStorage.getItem("userName");
       const userRole = localStorage.getItem("userRole");
 
-      if (accessToken && userName && refreshToken && userRole) {
-        return { accessToken, refreshToken, userName, userRole };
+      if (accessToken && userName && userRole) {
+        return { accessToken, userName, userRole };
       }
       return null;
     } catch {
@@ -32,15 +32,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = (userData: User) => {
     localStorage.setItem("accessToken", userData.accessToken);
-    localStorage.setItem("refreshToken", userData.refreshToken);
     localStorage.setItem("userName", userData.userName);
-    localStorage.setItem("userRole", userData.userRole || "USER");
+    localStorage.setItem("userRole", userData.userRole);
     setUser(userData);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await logoutAPI(); // 서버에 로그아웃 요청 (Redis 삭제)
     localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
     localStorage.removeItem("userName");
     localStorage.removeItem("userRole");
     setUser(null);
