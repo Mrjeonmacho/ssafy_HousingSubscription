@@ -13,6 +13,7 @@ import Chatbot from "../pages/Chatbot";
 
 import LoginPage from "../pages/LoginPage";
 import SignupPage from "../pages/SignupPage";
+import MyPage from "../pages/MyPage";
 
 export default function App() {
   return (
@@ -29,7 +30,7 @@ export default function App() {
               <Route path="quiz" element={<Quiz />} />
               <Route path="preference" element={<Preference />} />
             </Route>
-
+            <Route path="/mypage" element={<MyPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
           </Route>
