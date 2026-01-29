@@ -1,15 +1,18 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "../context/AuthContext";
 
-import Layout from "../components/layout/Layout";
-import ChatbotLayout from "../components/chatbot/ChatbotLayout";
-
 import HomePage from "../pages/HomePage";
+import Layout from "../components/layout/Layout";
+
 import NoticesPage from "../pages/NoticesPage";
+import NoticeDetailPage from "../pages/NoticeDetailPage";
+
 import Playground from "../pages/Playground/Playground";
 import Quiz from "../pages/Playground/Quiz";
 import Preference from "../pages/Playground/Preference";
+
 import Chatbot from "../pages/Chatbot";
+import ChatbotLayout from "../components/chatbot/ChatbotLayout";
 
 import LoginPage from "../pages/LoginPage";
 import SignupPage from "../pages/SignupPage";
@@ -23,7 +26,10 @@ export default function App() {
           {/* 일반 페이지: 기존 Layout 적용 */}
           <Route element={<Layout />}>
             <Route path="/" element={<HomePage />} />
-            <Route path="/notices" element={<NoticesPage />} />
+            <Route path="/notices">
+              <Route index element={<NoticesPage />} />
+              <Route path=":noticeId" element={<NoticeDetailPage />} />
+            </Route>
 
             <Route path="/playground">
               <Route index element={<Playground />} />
