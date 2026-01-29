@@ -1,5 +1,6 @@
 // Front/src/pages/Chatbot.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import type { ChatMessage } from "../data/chat";
 
 import type { AxiosError } from "axios";
@@ -43,8 +44,9 @@ function toErrorText(err: unknown): string {
   return "요청 처리 중 오류가 발생했습니다.";
 }
 
-
 export default function Chatbot() {
+  const location = useLocation();
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -66,8 +68,8 @@ export default function Chatbot() {
     });
   }, [messages.length]);
 
-  const handleSend = async () => {
-    const value = input.trim();
+  const handleSendText = async (raw: string) => {
+    const value = raw.trim();
     if (!value || isSending) return;
 
     setErrorText(null);
@@ -81,7 +83,7 @@ export default function Chatbot() {
       createdAt: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
 
     try {
@@ -95,7 +97,7 @@ export default function Chatbot() {
         createdAt: new Date().toISOString(),
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (e) {
       const msg = toErrorText(e);
       setErrorText(msg);
@@ -108,11 +110,34 @@ export default function Chatbot() {
         createdAt: new Date().toISOString(),
       };
 
-      setMessages(prev => [...prev, assistantErrorMessage]);
+      setMessages((prev) => [...prev, assistantErrorMessage]);
     } finally {
       setIsSending(false);
     }
   };
+
+  const handleSend = async () => {
+    await handleSendText(input);
+  };
+
+  // HeroSearch에서 넘어온 초기 메시지 자동 전송 (1회만)
+  const autoSentRef = useRef(false);
+  useEffect(() => {
+    if (autoSentRef.current) return;
+
+    const initialMessage =
+      (location.state as { initialMessage?: string } | null)?.initialMessage;
+
+    if (!initialMessage) return;
+
+    autoSentRef.current = true;
+
+    // 입력창에도 보이게 하고 싶으면 유지, 바로 전송만 원하면 setInput은 빼셔도 됩니다.
+    setInput(initialMessage);
+
+    // 상태 반영 타이밍 이슈 피하려고 텍스트 직접 전달
+    void handleSendText(initialMessage);
+  }, [location.state]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -137,7 +162,7 @@ export default function Chatbot() {
         isSending={isSending}
         onInputChange={setInput}
         onSend={handleSend}
-        onQuickAction={label => setInput(label)}
+        onQuickAction={(label) => setInput(label)}
       />
     </div>
   );
